@@ -1,41 +1,40 @@
-using HarmonyLib;
-using ResoniteModLoader;
-using System;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using FrooxEngine;
+﻿using System.Reflection.Emit;
+using BepInEx;
+using BepInEx.Configuration;
+using BepInEx.Logging;
+using BepInEx.NET.Common;
+using BepInExResoniteShim;
 using Elements.Core;
+using FrooxEngine;
 using FrooxEngine.UIX;
-using System.Reflection.Emit;
+using HarmonyLib;
 
 namespace SaveImagePrompt;
 
-public class SaveImagePrompt : ResoniteMod
+[ResonitePlugin(PluginMetadata.GUID, PluginMetadata.NAME, PluginMetadata.VERSION, PluginMetadata.AUTHORS, PluginMetadata.REPOSITORY_URL)]
+[BepInDependency(BepInExResoniteShim.PluginMetadata.GUID, BepInDependency.DependencyFlags.HardDependency)]
+public class Plugin : BasePlugin
 {
-    public const string VERSION = "1.0.0";
-    public override string Name => "SaveImagePrompt";
-    public override string Author => "art0007i";
-    public override string Version => VERSION;
-    public override string Link => "https://github.com/art0007i/SaveImagePrompt/";
+#nullable disable
+    internal static new ManualLogSource Log;
+    internal static ConfigEntry<bool> Enabled;
+#nullable enable
 
-    [AutoRegisterConfigKey]
-    public static ModConfigurationKey<bool> KEY_ENABLED = new("enabled", "Should the mod be enabled?", () => true);
-    static ModConfiguration config;
-
-    public override void OnEngineInit()
+    public override void Load()
     {
-        config = GetConfiguration();
-        Harmony harmony = new Harmony("me.art0007i.SaveImagePrompt");
-        harmony.PatchAll();
+        Log = base.Log;
+
+        Enabled = Config.Bind("General", "Enabled", true, "Should the mod be enabled?");
+        
+        HarmonyInstance.PatchAll();
     }
+    
     [HarmonyPatch(typeof(PhotoMetadata), nameof(PhotoMetadata.NotifyOfScreenshot))]
     class SaveImagePromptPatch
     {
         public static Task Proxy(Worker worker, Func<Task> task)
         {
-            if (!config.GetValue(KEY_ENABLED)) return worker.StartGlobalTask(task);
+            if (!Enabled.Value) return worker.StartGlobalTask(task);
 
             var tcs = new TaskCompletionSource<bool>();
 
