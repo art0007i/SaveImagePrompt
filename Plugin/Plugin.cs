@@ -29,16 +29,15 @@ public class Plugin : BasePlugin
         HarmonyInstance.PatchAll();
     }
     
-    [HarmonyPatch(typeof(PhotoMetadata), nameof(PhotoMetadata.NotifyOfScreenshot))]
+    [HarmonyPatch(typeof(CameraMediaMetadataBase), nameof(CameraMediaMetadataBase.Export))]
     class SaveImagePromptPatch
     {
-        public static Task Proxy(Worker worker, Func<Task> task)
+        public static Task Proxy(CameraMediaMetadataBase worker, bool autoSave)
         {
-            if (!Enabled.Value) return worker.StartGlobalTask(task);
+            if (!Enabled.Value) return worker.RunExport(autoSave);
 
             var tcs = new TaskCompletionSource<bool>();
 
-            var __instance = worker as PhotoMetadata;
             Userspace.UserspaceWorld.RunSynchronously(() =>
             {
                 var dialog = Userspace.UserspaceWorld.RootSlot.AddSlot("Save Image Prompt");
@@ -48,7 +47,7 @@ public class Plugin : BasePlugin
                 RadiantUI_Constants.SetupEditorStyle(uIBuilder);
                 uIBuilder.VerticalLayout(4f);
                 uIBuilder.Style.MinHeight = 64f;
-                uIBuilder.Text($"Would you like to save the image: \"{__instance.Slot.Name}\" from world \"{__instance.World.Name}\"");
+                uIBuilder.Text($"Would you like to save the image: \"{worker.Slot.Name}\" from world \"{worker.World.Name}\"");
                 uIBuilder.Style.MinHeight = 32f;
                 uIBuilder.HorizontalLayout(4f);
                 uIBuilder.Button("Save", RadiantUI_Constants.Sub.GREEN).LocalPressed += (b, e) =>
@@ -78,25 +77,32 @@ public class Plugin : BasePlugin
             {
                 if (await tcs.Task)
                 {
-                    await worker.StartGlobalTask(task);
+                    await worker.RunExport(autoSave);
                 }
             });
         }
 
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> codes)
         {
-            var lookFor = AccessTools.FirstMethod(typeof(Worker), (mi) =>
-                mi.Name == nameof(Worker.StartGlobalTask) && !mi.IsGenericMethod);
+            var found = false;
+            var lookFor = AccessTools.FirstMethod(typeof(CameraMediaMetadataBase), (mi) =>
+                mi.Name == nameof(CameraMediaMetadataBase.RunExport) && !mi.IsGenericMethod);
             foreach (var code in codes)
             {
                 if (code.Calls(lookFor))
                 {
+                    found = true;
                     yield return new(OpCodes.Call, AccessTools.Method(typeof(SaveImagePromptPatch), nameof(SaveImagePromptPatch.Proxy)));
                 }
                 else
                 {
                     yield return code;
                 }
+            }
+
+            if (!found)
+            {
+                Log.LogError("Failed to apply patch on CameraMediaMetadataBase.Export");
             }
         }
     }
