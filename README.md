@@ -3,7 +3,7 @@
 
 Spam finger photos without clogging up your screenshots folder with trash.
 
-A [Resonite](https://resonite.com/) mod that gives you a prompt before saving an image to your disk.
+A [Resonite](https://resonite.com/) mod that gives you a prompt before saving an image or video to your disk.
 
 ## Installation (Manual)
 1. Install [BepisLoader](https://github.com/ResoniteModding/BepisLoader) for Resonite.
