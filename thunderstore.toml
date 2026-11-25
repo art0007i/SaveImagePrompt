@@ -6,7 +6,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "art0007i"
 name = "SaveImagePrompt"
-description = "Spam finger photos without clogging up your screenshots folder with trash (gives you a prompt before saving an image to your disk)"
+description = "Spam finger photos without clogging up your screenshots folder with trash (gives you a prompt before saving an image or video to your disk)"
 websiteUrl = "https://github.com/art0007i/SaveImagePrompt"
 containsNsfwContent = false
 

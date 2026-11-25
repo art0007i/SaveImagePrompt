@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Version>1.0.0</Version>
     <Authors>art0007i</Authors>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <RepositoryUrl>https://github.com/art0007i/SaveImagePrompt</RepositoryUrl>
     <PackageId>art0007i.SaveImagePrompt</PackageId>
     <Product>SaveImagePrompt</Product>
@@ -21,13 +21,22 @@
 
     <PluginsDir>$(GamePath)BepInEx/plugins/</PluginsDir>
     <PluginTargetDir>$(PluginsDir)$(Authors)-$(AssemblyName)/$(AssemblyName)/</PluginTargetDir>
-    <CopyToPlugins>true</CopyToPlugins>
+    <CopyToPlugins>false</CopyToPlugins>
   </PropertyGroup>
 
   <!-- Modding dependencies -->
   <ItemGroup>
     <PackageReference Include="BepInEx.ResonitePluginInfoProps" Version="3.*" />
     <PackageReference Include="ResoniteModding.BepInExResoniteShim" Version="0.9.*" />
+
+    <PackageReference Include="Krafs.Publicizer" Version="2.3.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Publicize Include="FrooxEngine:FrooxEngine.CameraMediaMetadataBase.RunExport" />
   </ItemGroup>
 
   <!-- NuGet fallback stripped game references -->
